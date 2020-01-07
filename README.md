@@ -12,6 +12,7 @@ A automated way of uploading to Instagram.
 and also 1:1 square images. So `1080px x 1080px` images.
 
 2. Download and install [chromedriver](https://chromedriver.chromium.org/) for your version of Chrome. Chrome >> `...` > About Google Chrome.
+Then place it in a directory [`/chromedriver`](chromedriver) as `/chromedriver/chromedriver.exe`.
 
 3. `pip install -r requirments.txt`
 
