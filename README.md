@@ -15,5 +15,5 @@ and also 1:1 square images. So `1080px x 1080px` images.
 
 3. `pip install -r requirments.txt`
 
-4. Input your Instagram username and password in [`instagram.py`](instagram.py) and run the script 
+4. Input your Instagram username and password in [`instagram.py`](instagram.py#L121) and run the script 
 `(venv) python instagram.py` 
