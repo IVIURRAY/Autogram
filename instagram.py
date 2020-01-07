@@ -95,7 +95,7 @@ class Autogram:
         # Add the image path and click enter
         print('Uploading image to file explorer...')
         autoit.win_active("Open")
-        autoit.control_send("Open", "Edit1", os.path.normpath(file_path))
+        autoit.control_send("Open", "Edit1", os.path.normpath(os.getcwd() + '/' + file_path))
         autoit.control_send("Open", "Edit1", "{ENTER}")
         time.sleep(2)
 
@@ -126,6 +126,6 @@ if __name__ == '__main__':
     ig.popup_close_add_to_home_screen()
 
     description = 'Automatically upload this image using Code! \nSo I\'ve already got bored of positing to Instagram so I created a script to do it for me #automation #python \nGithub: https://github.com/IVIURRAY/Autogram'
-    ig.upload_image('H:\Code\PycharmProjects\Autogram\posts\instagram_post.jpeg', description=description)
+    ig.upload_image('posts\instagram_post.jpeg', description=description)
     ig.popup_close_turn_on_notifications()
     ig.profile_page()
