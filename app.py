@@ -1,5 +1,9 @@
 import os
+import json
 from PyQt5.QtWidgets import *
+
+ARCHIVE_DIR = os.path.normpath(os.getcwd() + '/.archive')
+SCHEDULE = os.path.normpath(os.getcwd() + '/.schedule')
 
 
 class AutogramApp(QWidget):
@@ -10,6 +14,8 @@ class AutogramApp(QWidget):
         mainLayout.addWidget(self.posts_section(), 1, 0)
         mainLayout.addWidget(self.scheduler_section(), 1, 1)
 
+        self.setMinimumWidth(250)
+        self.setWindowTitle("Autogram")
         self.setLayout(mainLayout)
 
     def posts_section(self):
@@ -45,16 +51,15 @@ class AutogramApp(QWidget):
                     print('Aborting removing photos...')
                     return
 
-                archive_dir = os.path.normpath(os.getcwd() + '/.archive')
-                if not os.path.exists(archive_dir):
+                if not os.path.exists(ARCHIVE_DIR):
                     print('Creating archive directory...')
-                    os.mkdir(archive_dir)
+                    os.mkdir(ARCHIVE_DIR)
 
             for file_path in files:
                 try:
                     print(f'Deleting post: {file_path}')
                     filename = file_path.split('/')[-1]
-                    os.rename(file_path, os.path.normpath(f'{archive_dir}/{filename}'))
+                    os.rename(file_path, os.path.normpath(f'{ARCHIVE_DIR}/{filename}'))
                 except Exception as e:
                     print(f'Unable to delete file: {file_path} \n{e}')
 
@@ -146,7 +151,32 @@ class UploadPhotosPopup(QWidget):
         def on_ok():
             print(f'Chosen image is: {self.chosen_image}')
             print(f'Chosen description is: {self.chosen_description}')
-            self.close()
+
+            data = {
+                'photo': self.chosen_image,
+                'description': self.chosen_description
+            }
+
+            if os.path.exists(SCHEDULE):
+                print('Editing existing schedule file')
+
+                # Having issue doing this in one context as it was reading a stale version of the file
+                # Therefore, read the file and get the data. Close the file.
+                with open(SCHEDULE, 'r') as schedule_file:
+                    schedule = json.load(schedule_file)
+                    schedule.append({
+                        'photo': self.chosen_image,
+                        'description': self.chosen_description
+                    })
+                # Then read the file again to write to it
+                with open(SCHEDULE, 'w') as schedule_file:
+                    json.dump(schedule, schedule_file)
+                self.close()
+            else:
+                print('Creating new schedule file!')
+                with open(SCHEDULE, 'w') as schedule_file:
+                    json.dump([data], schedule_file)
+                self.close()
 
         self.btn_ok.clicked.connect(on_ok)
 
@@ -159,8 +189,6 @@ class UploadPhotosPopup(QWidget):
 
     def open_file_dialog(self):
         return QFileDialog.getOpenFileName(self, 'Autogram', 'posts', 'All Files (*)')
-
-
 
 
 if __name__ == '__main__':
