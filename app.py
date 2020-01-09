@@ -2,7 +2,7 @@ import os
 from PyQt5.QtWidgets import *
 
 
-class AutogramApp(QDialog):
+class AutogramApp(QWidget):
 
     def __init__(self, parent=None):
         super(AutogramApp, self).__init__(parent)
@@ -26,8 +26,8 @@ class AutogramApp(QDialog):
     def create_upload_btn(self):
         def on_click():
             print('Clicked upload...')
-            files, _ = self.open_file_dialog()
-            print(files)
+            self.uploads_popup = UploadPhotosPopup()
+            self.uploads_popup.show()
 
         btn = QPushButton('Upload')
         btn.clicked.connect(on_click)
@@ -75,7 +75,7 @@ class AutogramApp(QDialog):
         return btn
 
     def open_file_dialog(self):
-        return QFileDialog.getOpenFileNames(self, 'Chose Autogram Upload', 'posts', 'All Files (*)')
+        return QFileDialog.getOpenFileNames(self, 'Autogram', 'posts', 'All Files (*)')
 
     def scheduler_section(self):
         box = QGroupBox("Scheduler")
@@ -86,6 +86,81 @@ class AutogramApp(QDialog):
         box.setLayout(layout)
 
         return box
+
+
+class UploadPhotosPopup(QWidget):
+
+    def __init__(self, parent=None):
+        super(UploadPhotosPopup, self).__init__(parent)
+        self.chosen_image = None
+        self.chosen_description = None
+
+        self.btn_ok = QPushButton("OK")
+        self.btn_ok.setEnabled(False)
+
+        mainLayout = QGridLayout()
+        mainLayout.addWidget(self.image_upload(), 1, 0)
+        mainLayout.addWidget(self.description_upload(), 2, 0)
+        mainLayout.addWidget(self.confirm_upload(), 3, 0)
+        self.setLayout(mainLayout)
+
+    def image_upload(self):
+        box = QGroupBox("Image")
+        btn = QPushButton("Chose Image...")
+        label = QLabel('No image selected')
+
+        def on_click():
+            file, _ = self.open_file_dialog()
+            print(f'Chosen image: {file}')
+            label.setText(file.split('/')[-1])
+            self.btn_ok.setEnabled(True)
+            self.chosen_image = file
+
+        btn.clicked.connect(on_click)
+
+        layout = QVBoxLayout()
+        layout.addWidget(btn)
+        layout.addWidget(label)
+        box.setLayout(layout)
+
+        return box
+
+    def description_upload(self):
+        box = QGroupBox("Description")
+
+        def on_change():
+            self.chosen_description = textbox.toPlainText()
+
+        textbox = QPlainTextEdit(QWidget().resize(150, 40))
+        textbox.textChanged.connect(on_change)
+
+        layout = QVBoxLayout()
+        layout.addWidget(textbox)
+        box.setLayout(layout)
+
+        return box
+
+    def confirm_upload(self):
+        box = QGroupBox("Upload")
+
+        def on_ok():
+            print(f'Chosen image is: {self.chosen_image}')
+            print(f'Chosen description is: {self.chosen_description}')
+            self.close()
+
+        self.btn_ok.clicked.connect(on_ok)
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.btn_ok)
+        layout.addWidget(QPushButton("Cancel"))
+        box.setLayout(layout)
+
+        return box
+
+    def open_file_dialog(self):
+        return QFileDialog.getOpenFileName(self, 'Autogram', 'posts', 'All Files (*)')
+
+
 
 
 if __name__ == '__main__':

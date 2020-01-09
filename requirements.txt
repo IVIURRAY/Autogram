@@ -1,3 +1,4 @@
 selenium
 pyautoit
 PyQt5
+QtGui
