@@ -39,12 +39,24 @@ class AutogramApp(QDialog):
             print('Clicked remove...')
             files, _ = self.open_file_dialog()
 
-            for file in files:
+            if files:
+                confirm = QMessageBox.question(self, 'Confirm?', f'Do you want to remove {len(files)} photos?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+                if confirm == QMessageBox.No:
+                    print('Aborting removing photos...')
+                    return
+
+                archive_dir = os.path.normpath(os.getcwd() + '/.archive')
+                if not os.path.exists(archive_dir):
+                    print('Creating archive directory...')
+                    os.mkdir(archive_dir)
+
+            for file_path in files:
                 try:
-                    print(f'Deleting post: {file}')
-                    os.remove(file)
+                    print(f'Deleting post: {file_path}')
+                    filename = file_path.split('/')[-1]
+                    os.rename(file_path, os.path.normpath(f'{archive_dir}/{filename}'))
                 except Exception as e:
-                    print(f'Unable to delete file: {file} - {e}')
+                    print(f'Unable to delete file: {file_path} \n{e}')
 
         btn = QPushButton('Remove')
         btn.clicked.connect(on_click)
@@ -74,9 +86,6 @@ class AutogramApp(QDialog):
         box.setLayout(layout)
 
         return box
-
-
-
 
 
 if __name__ == '__main__':
