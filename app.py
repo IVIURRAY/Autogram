@@ -15,7 +15,11 @@ class AutogramApp(QWidget):
 
         # Other windows
         self.uploads_popup = UploadPhotosPopup()
-        self.view_posts_popup = ViewPhotosPopup()
+
+        # Buttons
+        self.btn_upload_photos = QPushButton('Upload')
+        self.btn_remove_photos = QPushButton('Remove')
+        self.btn_view_photos = QPushButton('View Photos')
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.posts_section(), 1, 0)
@@ -41,10 +45,9 @@ class AutogramApp(QWidget):
             print('Clicked upload...')
             self.uploads_popup.show()
 
-        btn = QPushButton('Upload')
-        btn.clicked.connect(on_click)
+        self.btn_upload_photos.clicked.connect(on_click)
 
-        return btn
+        return self.btn_upload_photos
 
     def create_remove_btn(self):
         def on_click():
@@ -56,6 +59,7 @@ class AutogramApp(QWidget):
                 if confirm == QMessageBox.No:
                     print('Aborting removing photos...')
                     return
+                self.toggle_photo_buttons(False)
 
                 if not os.path.exists(ARCHIVE_DIR):
                     print('Creating archive directory...')
@@ -69,22 +73,28 @@ class AutogramApp(QWidget):
                 except Exception as e:
                     print(f'Unable to delete file: {file_path} \n{e}')
 
-        btn = QPushButton('Remove')
-        btn.clicked.connect(on_click)
+            self.toggle_photo_buttons(True)
 
-        return btn
+        self.btn_remove_photos.clicked.connect(on_click)
+
+        return self.btn_remove_photos
 
     def create_view_btn(self):
         def on_click():
+            self.view_posts_popup = ViewPhotosPopup()  # create a new one so we don't get stale reads of the posts dir
             self.view_posts_popup.show()
 
-        btn = QPushButton('View Photos')
-        btn.clicked.connect(on_click)
+        self.btn_view_photos.clicked.connect(on_click)
 
-        return btn
+        return self.btn_view_photos
 
     def open_file_dialog(self):
         return QFileDialog.getOpenFileNames(self, 'Autogram', 'posts', 'All Files (*)')
+
+    def toggle_photo_buttons(self, enabled):
+        self.btn_upload_photos.setEnabled(enabled)
+        self.btn_remove_photos.setEnabled(enabled)
+        self.btn_view_photos.setEnabled(enabled)
 
     def scheduler_section(self):
         box = QGroupBox("Scheduler")
@@ -101,15 +111,9 @@ class ViewPhotosPopup(QWidget):
 
     def __init__(self, parent=None):
         super(ViewPhotosPopup, self).__init__(parent)
-
         self.setWindowTitle('Autogram - Image Viewer')
-        self.scroll_area = QScrollArea(self)
-        self.scroll_area.setWidgetResizable(True)
-
-        widget = QWidget()
-        self.scroll_area.setWidget(widget)
-        self.scroll_area_content = QVBoxLayout(widget)
-
+        self.setMinimumWidth(700)
+        self.setMinimumHeight(700)
         self.initUI()
 
     def create_photo_stream(self):
@@ -121,9 +125,15 @@ class ViewPhotosPopup(QWidget):
             self.scroll_area_content.addWidget(label)
 
     def initUI(self):
-        self.create_photo_stream()
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+
+        widget = QWidget()
+        self.scroll_area.setWidget(widget)
+        self.scroll_area_content = QVBoxLayout(widget)
         self.layout_All = QVBoxLayout(self)
         self.layout_All.addWidget(self.scroll_area)
+        self.create_photo_stream()
 
 
 class UploadPhotosPopup(QWidget):
