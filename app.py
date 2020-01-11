@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 from PyQt5.QtWidgets import *
 
 ARCHIVE_DIR = os.path.normpath(os.getcwd() + '/.archive')
@@ -10,6 +11,10 @@ class AutogramApp(QWidget):
 
     def __init__(self, parent=None):
         super(AutogramApp, self).__init__(parent)
+
+        # Other windows
+        self.uploads_popup = UploadPhotosPopup()
+
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.posts_section(), 1, 0)
         mainLayout.addWidget(self.scheduler_section(), 1, 1)
@@ -32,7 +37,6 @@ class AutogramApp(QWidget):
     def create_upload_btn(self):
         def on_click():
             print('Clicked upload...')
-            self.uploads_popup = UploadPhotosPopup()
             self.uploads_popup.show()
 
         btn = QPushButton('Upload')
@@ -102,6 +106,7 @@ class UploadPhotosPopup(QWidget):
 
         self.btn_ok = QPushButton("OK")
         self.btn_ok.setEnabled(False)
+        self.chosen_image_label = QLabel('No image selected')
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.image_upload(), 1, 0)
@@ -112,12 +117,10 @@ class UploadPhotosPopup(QWidget):
     def image_upload(self):
         box = QGroupBox("Image")
         btn = QPushButton("Chose Image...")
-        label = QLabel('No image selected')
 
         def on_click():
             file, _ = self.open_file_dialog()
-            print(f'Chosen image: {file}')
-            label.setText(file.split('/')[-1])
+            self.chosen_image_label.setText(file.split('/')[-1])
             self.btn_ok.setEnabled(True)
             self.chosen_image = file
 
@@ -125,7 +128,7 @@ class UploadPhotosPopup(QWidget):
 
         layout = QVBoxLayout()
         layout.addWidget(btn)
-        layout.addWidget(label)
+        layout.addWidget(self.chosen_image_label)
         box.setLayout(layout)
 
         return box
@@ -179,13 +182,20 @@ class UploadPhotosPopup(QWidget):
                 self.close()
 
         self.btn_ok.clicked.connect(on_ok)
-
+        btn_cancel = QPushButton("Cancel")
+        btn_cancel.clicked.connect(self.close)
         layout = QHBoxLayout()
         layout.addWidget(self.btn_ok)
-        layout.addWidget(QPushButton("Cancel"))
+        layout.addWidget(btn_cancel)
         box.setLayout(layout)
 
         return box
+
+    def close(self):
+        self.chosen_description = None
+        self.chosen_image = None
+        self.chosen_image_label.setText('No image selected')
+        super().close()
 
     def open_file_dialog(self):
         return QFileDialog.getOpenFileName(self, 'Autogram', 'posts', 'All Files (*)')
