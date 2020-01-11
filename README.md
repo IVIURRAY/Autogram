@@ -7,6 +7,9 @@ A automated way of uploading to Instagram.
 
 > Note: InstagramAPI did not work when building this for posting photos. So I had to build a workaround.
 
+## How to run
+Download the latest release from [here](https://github.com/IVIURRAY/Autogram/releases)
+
 ## How to use
 1. Add __Instagram ready images__ to the [`/posts`](posts) directory. These are common image file types (`.jpeg`, `.png`, etc...)
 and also 1:1 square images. So `1080px x 1080px` images.
