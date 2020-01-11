@@ -16,6 +16,10 @@ def setup():
         os.mkdir(config.POSTS_DIR)
 
 
+def open_file_dialog(qwidget):
+    return QFileDialog.getOpenFileNames(qwidget, 'Autogram', config.POSTS_DIR, 'All Files (*)')
+
+
 class AutogramApp(QWidget):
 
     def __init__(self, parent=None):
@@ -26,9 +30,10 @@ class AutogramApp(QWidget):
         self.uploads_popup = UploadPhotosPopup()
 
         # Buttons
-        self.btn_upload_photos = QPushButton('Upload')
+        self.btn_add_photos = QPushButton('Add')
         self.btn_remove_photos = QPushButton('Remove')
-        self.btn_view_photos = QPushButton('View Photos')
+        self.btn_view_photos = QPushButton('View')
+        self.btn_upload_to_instagram = QPushButton('Upload now')
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.posts_section(), 1, 0)
@@ -54,14 +59,14 @@ class AutogramApp(QWidget):
             print('Clicked upload...')
             self.uploads_popup.show()
 
-        self.btn_upload_photos.clicked.connect(on_click)
+        self.btn_add_photos.clicked.connect(on_click)
 
-        return self.btn_upload_photos
+        return self.btn_add_photos
 
     def create_remove_btn(self):
         def on_click():
             print('Clicked remove...')
-            files, _ = self.open_remove_file_dialog()
+            files, _ = open_file_dialog(self)
 
             if files:
                 confirm = QMessageBox.question(self, 'Confirm?', f'Do you want to remove {len(files)} photos?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -97,21 +102,20 @@ class AutogramApp(QWidget):
 
         return self.btn_view_photos
 
-    def open_remove_file_dialog(self):
-        return QFileDialog.getOpenFileNames(self, 'Autogram', config.POSTS_DIR, 'All Files (*)')
-
     def toggle_photo_buttons(self, enabled):
-        self.btn_upload_photos.setEnabled(enabled)
+        self.btn_add_photos.setEnabled(enabled)
         self.btn_remove_photos.setEnabled(enabled)
         self.btn_view_photos.setEnabled(enabled)
 
     def scheduler_section(self):
         box = QGroupBox("Scheduler")
 
+        def on_click():
+            files, _ = open_file_dialog(self)
+
+        self.btn_upload_to_instagram.clicked.connect(on_click)
         layout = QVBoxLayout()
-        # layout.addWidget(QPushButton('Upload'))
-        # layout.addWidget(QPushButton('View'))
-        layout.addWidget(QLabel('Coming soon.'))
+        layout.addWidget(self.btn_upload_to_instagram)
         box.setLayout(layout)
 
         return box
