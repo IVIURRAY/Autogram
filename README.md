@@ -25,7 +25,7 @@ Then place it in a directory [`/chromedriver`](chromedriver) as `/chromedriver/c
 ## How to build
 Navigate to the root folder and with your virtual environemt running do the following:
 1. `pip install pyinstaller`
-2. `pyinstall --oneilfe -w app.py`.
+2. `pyinstaller --onefile -w app.py`.
 3. This will generate a `/dist` folder which will have an `app.exe` inside.
 4. Rename to `Autogram_<RELEASE_BUILD_NUMBER>.exe`
 5. Upload to Github releases.
