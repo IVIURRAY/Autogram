@@ -1,6 +1,7 @@
 import json
 import os
 
+from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 ARCHIVE_DIR = os.path.normpath(os.getcwd() + '/.archive')
@@ -14,6 +15,7 @@ class AutogramApp(QWidget):
 
         # Other windows
         self.uploads_popup = UploadPhotosPopup()
+        self.view_posts_popup = ViewPhotosPopup()
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.posts_section(), 1, 0)
@@ -74,9 +76,7 @@ class AutogramApp(QWidget):
 
     def create_view_btn(self):
         def on_click():
-            print('Clicked view...')
-            files, _ = self.open_file_dialog()
-            print(files)
+            self.view_posts_popup.show()
 
         btn = QPushButton('View Photos')
         btn.clicked.connect(on_click)
@@ -95,6 +95,35 @@ class AutogramApp(QWidget):
         box.setLayout(layout)
 
         return box
+
+
+class ViewPhotosPopup(QWidget):
+
+    def __init__(self, parent=None):
+        super(ViewPhotosPopup, self).__init__(parent)
+
+        self.setWindowTitle('Autogram - Image Viewer')
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+
+        widget = QWidget()
+        self.scroll_area.setWidget(widget)
+        self.scroll_area_content = QVBoxLayout(widget)
+
+        self.initUI()
+
+    def create_photo_stream(self):
+        posts_path = os.path.normpath(os.getcwd() + '/posts')
+        for post in os.listdir(posts_path):
+            post_path = os.path.normpath(f'{posts_path}/{post}')
+            pixmap = QPixmap(post_path)
+            label = QLabel(pixmap=pixmap)
+            self.scroll_area_content.addWidget(label)
+
+    def initUI(self):
+        self.create_photo_stream()
+        self.layout_All = QVBoxLayout(self)
+        self.layout_All.addWidget(self.scroll_area)
 
 
 class UploadPhotosPopup(QWidget):
