@@ -1,5 +1,6 @@
 import time
 import autoit
+import config
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import *
@@ -11,6 +12,10 @@ class Autogram:
         self.username = username
         self.password = password
         self.driver = webdriver.Chrome(executable_path='chromedriver/chromedriver.exe', options=self._get_options())
+        self.default_hashtags = [
+            '#python', '#programming', '#pythonprogramming', '#developer', '#softwareengineer', '#dev', '#python3' 
+            '#pythonsofinstagram', '#pip', '#coding', '#coder', '#coderlifestyle', '#coderslife', '#softwaredeveloper'
+        ]
 
     @staticmethod
     def _get_options():
@@ -85,7 +90,7 @@ class Autogram:
                     print('Did not find `add to home screen` popup')
                     break
 
-    def upload_image(self, file_path, description=''):
+    def upload_image(self, file_name, description=''):
         # 1. Click upload image button
         print('Clicking `upload` button...')
         self.driver.find_element_by_xpath("//div[@role='menuitem']").click()
@@ -95,7 +100,7 @@ class Autogram:
         # Add the image path and click enter
         print('Uploading image to file explorer...')
         autoit.win_active("Open")
-        autoit.control_send("Open", "Edit1", os.path.normpath(os.getcwd() + '/' + file_path))
+        autoit.control_send("Open", "Edit1", os.path.normpath(config.POSTS_DIR + '/' + file_name))
         autoit.control_send("Open", "Edit1", "{ENTER}")
         time.sleep(2)
 

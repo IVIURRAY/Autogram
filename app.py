@@ -2,22 +2,18 @@ import json
 import os
 import shutil
 import uuid
-import tempfile
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-TEMP_DIR = os.path.normpath(tempfile.gettempdir() + '/Autogram')
-POSTS_DIR = os.path.normpath(TEMP_DIR + '/posts')
-ARCHIVE_DIR = os.path.normpath(TEMP_DIR + '/.archive')
-SCHEDULE = os.path.normpath(TEMP_DIR + '/.schedule')
+import config
 
 
 def setup():
-    if not os.path.exists(TEMP_DIR):
-        os.mkdir(TEMP_DIR)
-    if not os.path.exists(POSTS_DIR):
-        os.mkdir(POSTS_DIR)
+    if not os.path.exists(config.TEMP_DIR):
+        os.mkdir(config.TEMP_DIR)
+    if not os.path.exists(config.POSTS_DIR):
+        os.mkdir(config.POSTS_DIR)
 
 
 class AutogramApp(QWidget):
@@ -74,15 +70,15 @@ class AutogramApp(QWidget):
                     return
                 self.toggle_photo_buttons(False)
 
-                if not os.path.exists(ARCHIVE_DIR):
+                if not os.path.exists(config.ARCHIVE_DIR):
                     print('Creating archive directory...')
-                    os.mkdir(ARCHIVE_DIR)
+                    os.mkdir(config.ARCHIVE_DIR)
 
             for file_path in files:
                 try:
                     print(f'Deleting post: {file_path}')
                     filename, extension = file_path.split('/')[-1].split('.')
-                    os.rename(file_path, os.path.normpath(f'{ARCHIVE_DIR}/{filename}_{uuid.uuid4()}.{extension}'))
+                    os.rename(file_path, os.path.normpath(f'{config.ARCHIVE_DIR}/{filename}_{uuid.uuid4()}.{extension}'))
                 except Exception as e:
                     print(f'Unable to delete file: {file_path} \n{e}')
 
@@ -102,7 +98,7 @@ class AutogramApp(QWidget):
         return self.btn_view_photos
 
     def open_remove_file_dialog(self):
-        return QFileDialog.getOpenFileNames(self, 'Autogram', POSTS_DIR, 'All Files (*)')
+        return QFileDialog.getOpenFileNames(self, 'Autogram', config.POSTS_DIR, 'All Files (*)')
 
     def toggle_photo_buttons(self, enabled):
         self.btn_upload_photos.setEnabled(enabled)
@@ -131,8 +127,8 @@ class ViewPhotosPopup(QWidget):
         self.initUI()
 
     def create_photo_stream(self):
-        for post in os.listdir(POSTS_DIR):
-            post_path = os.path.normpath(f'{POSTS_DIR}/{post}')
+        for post in os.listdir(config.POSTS_DIR):
+            post_path = os.path.normpath(f'{config.POSTS_DIR}/{post}')
             pixmap = QPixmap(post_path)
             label = QLabel(pixmap=pixmap)
             self.scroll_area_content.addWidget(label)
@@ -205,7 +201,7 @@ class UploadPhotosPopup(QWidget):
 
         def on_ok():
             file_name = self.chosen_image.split('/')[-1]
-            destination = os.path.normpath(f'{POSTS_DIR}/{file_name}')
+            destination = os.path.normpath(f'{config.POSTS_DIR}/{file_name}')
             print(f'Moving file {self.chosen_image} to {destination}')
             try:
                 shutil.copy(self.chosen_image, destination)
@@ -238,23 +234,23 @@ class UploadPhotosPopup(QWidget):
             'description': self.chosen_description
         }
 
-        if os.path.exists(SCHEDULE):
+        if os.path.exists(config.SCHEDULE):
             print('Editing existing schedule file')
 
             # Having issue doing this in one context as it was reading a stale version of the file
             # Therefore, read the file and get the data. Close the file.
-            with open(SCHEDULE, 'r') as schedule_file:
+            with open(config.SCHEDULE, 'r') as schedule_file:
                 schedule = json.load(schedule_file)
                 schedule.append({
                     'photo': self.chosen_image,
                     'description': self.chosen_description
                 })
             # Then read the file again to write to it
-            with open(SCHEDULE, 'w') as schedule_file:
+            with open(config.SCHEDULE, 'w') as schedule_file:
                 json.dump(schedule, schedule_file)
         else:
             print('Creating new schedule file!')
-            with open(SCHEDULE, 'w') as schedule_file:
+            with open(config.SCHEDULE, 'w') as schedule_file:
                 json.dump([data], schedule_file)
 
     def close(self):
@@ -265,7 +261,7 @@ class UploadPhotosPopup(QWidget):
         super().close()
 
     def open_file_dialog(self):
-        return QFileDialog.getOpenFileName(self, 'Autogram', POSTS_DIR, 'All Files (*)')
+        return QFileDialog.getOpenFileName(self, 'Autogram', config.POSTS_DIR, 'All Files (*)')
 
 
 if __name__ == '__main__':
