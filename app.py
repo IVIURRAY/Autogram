@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import uuid
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -70,8 +71,8 @@ class AutogramApp(QWidget):
             for file_path in files:
                 try:
                     print(f'Deleting post: {file_path}')
-                    filename = file_path.split('/')[-1]
-                    os.rename(file_path, os.path.normpath(f'{ARCHIVE_DIR}/{filename}'))
+                    filename, extension = file_path.split('/')[-1].split('.')
+                    os.rename(file_path, os.path.normpath(f'{ARCHIVE_DIR}/{filename}_{uuid.uuid4()}.{extension}'))
                 except Exception as e:
                     print(f'Unable to delete file: {file_path} \n{e}')
 
@@ -147,6 +148,7 @@ class UploadPhotosPopup(QWidget):
         self.btn_ok = QPushButton("OK")
         self.btn_ok.setEnabled(False)
         self.chosen_image_label = QLabel('No image selected')
+        self.description_textbox = QPlainTextEdit(QWidget().resize(150, 40))
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.image_upload(), 1, 0)
@@ -177,13 +179,12 @@ class UploadPhotosPopup(QWidget):
         box = QGroupBox("Description")
 
         def on_change():
-            self.chosen_description = textbox.toPlainText()
+            self.chosen_description = self.description_textbox.toPlainText()
 
-        textbox = QPlainTextEdit(QWidget().resize(150, 40))
-        textbox.textChanged.connect(on_change)
+        self.description_textbox.textChanged.connect(on_change)
 
         layout = QVBoxLayout()
-        layout.addWidget(textbox)
+        layout.addWidget(self.description_textbox)
         box.setLayout(layout)
 
         return box
@@ -204,6 +205,7 @@ class UploadPhotosPopup(QWidget):
                 self.close()
                 return
             self.add_photo_to_schedule()
+            QMessageBox.information(self, 'Success', f'Uploaded file {file_name} successfully!', QMessageBox.Close, QMessageBox.Close)
             self.close()
 
         self.btn_ok.clicked.connect(on_ok)
@@ -248,6 +250,7 @@ class UploadPhotosPopup(QWidget):
         self.chosen_description = None
         self.chosen_image = None
         self.chosen_image_label.setText('No image selected')
+        self.description_textbox.clear()
         super().close()
 
     def open_file_dialog(self):
