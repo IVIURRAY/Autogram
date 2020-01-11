@@ -32,7 +32,8 @@ class AutogramApp(QWidget):
         super(AutogramApp, self).__init__(parent)
 
         # Other windows
-        self.uploads_popup = UploadPhotosPopup()
+        self.add_photos_popup = AddPhotosPopup()
+        self.instagram_login_popup = InstagramLoginPopup()
 
         # Buttons
         self.btn_add_photos = QPushButton('Add')
@@ -65,7 +66,7 @@ class AutogramApp(QWidget):
     def create_upload_btn(self):
         def on_click():
             print('Clicked upload...')
-            self.uploads_popup.show()
+            self.add_photos_popup.show()
 
         self.btn_add_photos.clicked.connect(on_click)
 
@@ -124,8 +125,9 @@ class AutogramApp(QWidget):
             if file:
                 schedule = self.scheduler.get_schedule_for_post(file.split('/')[-1])
                 if schedule:
-                    ig = instagram.Autogram('<USERNAME>', '<PASSWORD>')
-                    ig._auto_post(schedule['photo'], schedule['description'])
+                    self.instagram_login_popup.show()
+                    # ig = instagram.Autogram('<USERNAME>', '<PASSWORD>')
+                    # ig._auto_post(schedule['photo'], schedule['description'])
 
         self.btn_upload_to_instagram.clicked.connect(on_click)
         layout = QVBoxLayout()
@@ -163,10 +165,63 @@ class ViewPhotosPopup(QWidget):
         self.create_photo_stream()
 
 
-class UploadPhotosPopup(QWidget):
+class InstagramLoginPopup(QWidget):
+
+    def __init__(self, parnet=None):
+        super(InstagramLoginPopup, self).__init__(parnet)
+        self._username = None
+        self._password = None
+        self.setMinimumWidth(250)
+        self.setWindowTitle("IG Login")
+
+        self.btn_login = QPushButton("Login")
+        self.input_username = QLineEdit()
+        self.input_password = QLineEdit()
+
+        mainLayout = QGridLayout()
+        mainLayout.addWidget(self.username(), 1, 0)
+        mainLayout.addWidget(self.password(), 2, 0)
+        mainLayout.addWidget(self.confirm(), 3, 0)
+        self.setLayout(mainLayout)
+
+    def username(self):
+        box = QGroupBox("Enter Username")
+        layout = QVBoxLayout()
+        self.input_username.resize(200, 40)
+        layout.addWidget(self.input_username)
+        box.setLayout(layout)
+
+        return box
+
+    def password(self):
+        box = QGroupBox("Enter Password")
+        layout = QVBoxLayout()
+        self.input_password.resize(200, 40)
+        self.input_password.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.input_password)
+        box.setLayout(layout)
+
+        return box
+
+    def confirm(self):
+        box = QGroupBox("Login")
+        layout = QVBoxLayout()
+
+        def on_click():
+            print(self.input_username.text())
+            print(self.input_password.text())
+
+        self.btn_login.clicked.connect(on_click)
+        layout.addWidget(self.btn_login)
+        box.setLayout(layout)
+
+        return box
+
+
+class AddPhotosPopup(QWidget):
 
     def __init__(self, parent=None):
-        super(UploadPhotosPopup, self).__init__(parent)
+        super(AddPhotosPopup, self).__init__(parent)
         self.chosen_image = None
         self.chosen_description = None
 
