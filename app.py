@@ -4,6 +4,7 @@ import os
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+POSTS_DIR = os.path.normpath(os.getcwd() + '/posts')
 ARCHIVE_DIR = os.path.normpath(os.getcwd() + '/.archive')
 SCHEDULE = os.path.normpath(os.getcwd() + '/.schedule')
 
@@ -117,9 +118,8 @@ class ViewPhotosPopup(QWidget):
         self.initUI()
 
     def create_photo_stream(self):
-        posts_path = os.path.normpath(os.getcwd() + '/posts')
-        for post in os.listdir(posts_path):
-            post_path = os.path.normpath(f'{posts_path}/{post}')
+        for post in os.listdir(POSTS_DIR):
+            post_path = os.path.normpath(f'{POSTS_DIR}/{post}')
             pixmap = QPixmap(post_path)
             label = QLabel(pixmap=pixmap)
             self.scroll_area_content.addWidget(label)
@@ -191,34 +191,9 @@ class UploadPhotosPopup(QWidget):
         box = QGroupBox("Upload")
 
         def on_ok():
-            print(f'Chosen image is: {self.chosen_image}')
-            print(f'Chosen description is: {self.chosen_description}')
-
-            data = {
-                'photo': self.chosen_image,
-                'description': self.chosen_description
-            }
-
-            if os.path.exists(SCHEDULE):
-                print('Editing existing schedule file')
-
-                # Having issue doing this in one context as it was reading a stale version of the file
-                # Therefore, read the file and get the data. Close the file.
-                with open(SCHEDULE, 'r') as schedule_file:
-                    schedule = json.load(schedule_file)
-                    schedule.append({
-                        'photo': self.chosen_image,
-                        'description': self.chosen_description
-                    })
-                # Then read the file again to write to it
-                with open(SCHEDULE, 'w') as schedule_file:
-                    json.dump(schedule, schedule_file)
-                self.close()
-            else:
-                print('Creating new schedule file!')
-                with open(SCHEDULE, 'w') as schedule_file:
-                    json.dump([data], schedule_file)
-                self.close()
+            self.add_photo_to_schedule()
+            self.add_photo_to_posts()
+            self.close()
 
         self.btn_ok.clicked.connect(on_ok)
         btn_cancel = QPushButton("Cancel")
@@ -229,6 +204,37 @@ class UploadPhotosPopup(QWidget):
         box.setLayout(layout)
 
         return box
+
+    def add_photo_to_schedule(self):
+        print(f'Chosen image is: {self.chosen_image}')
+        print(f'Chosen description is: {self.chosen_description}')
+
+        data = {
+            'photo': self.chosen_image,
+            'description': self.chosen_description
+        }
+
+        if os.path.exists(SCHEDULE):
+            print('Editing existing schedule file')
+
+            # Having issue doing this in one context as it was reading a stale version of the file
+            # Therefore, read the file and get the data. Close the file.
+            with open(SCHEDULE, 'r') as schedule_file:
+                schedule = json.load(schedule_file)
+                schedule.append({
+                    'photo': self.chosen_image,
+                    'description': self.chosen_description
+                })
+            # Then read the file again to write to it
+            with open(SCHEDULE, 'w') as schedule_file:
+                json.dump(schedule, schedule_file)
+        else:
+            print('Creating new schedule file!')
+            with open(SCHEDULE, 'w') as schedule_file:
+                json.dump([data], schedule_file)
+
+    def add_photo_to_posts(self):
+        pass
 
     def close(self):
         self.chosen_description = None
