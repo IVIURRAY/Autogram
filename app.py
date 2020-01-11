@@ -7,6 +7,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 import config
+import scheduler
 
 
 def setup():
@@ -34,6 +35,9 @@ class AutogramApp(QWidget):
         self.btn_remove_photos = QPushButton('Remove')
         self.btn_view_photos = QPushButton('View')
         self.btn_upload_to_instagram = QPushButton('Upload now')
+
+        # Helpers
+        self.scheduler = scheduler.Scheduler()
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.posts_section(), 1, 0)
@@ -84,6 +88,7 @@ class AutogramApp(QWidget):
                     print(f'Deleting post: {file_path}')
                     filename, extension = file_path.split('/')[-1].split('.')
                     os.rename(file_path, os.path.normpath(f'{config.ARCHIVE_DIR}/{filename}_{uuid.uuid4()}.{extension}'))
+                    self.scheduler.remove_schedule_for_post(f'{filename}.{extension}')
                 except Exception as e:
                     print(f'Unable to delete file: {file_path} \n{e}')
 
@@ -111,7 +116,9 @@ class AutogramApp(QWidget):
         box = QGroupBox("Scheduler")
 
         def on_click():
-            files, _ = open_file_dialog(self)
+            file, _ = open_file_dialog(self)
+            if file:
+                pass
 
         self.btn_upload_to_instagram.clicked.connect(on_click)
         layout = QVBoxLayout()
@@ -160,6 +167,8 @@ class UploadPhotosPopup(QWidget):
         self.btn_ok.setEnabled(False)
         self.chosen_image_label = QLabel('No image selected')
         self.description_textbox = QPlainTextEdit(QWidget().resize(150, 40))
+
+        self.scheduler = scheduler.Scheduler()
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.image_upload(), 1, 0)
@@ -232,30 +241,7 @@ class UploadPhotosPopup(QWidget):
     def add_photo_to_schedule(self):
         print(f'Chosen image is: {self.chosen_image}')
         print(f'Chosen description is: {self.chosen_description}')
-
-        data = {
-            'photo': self.chosen_image,
-            'description': self.chosen_description
-        }
-
-        if os.path.exists(config.SCHEDULE):
-            print('Editing existing schedule file')
-
-            # Having issue doing this in one context as it was reading a stale version of the file
-            # Therefore, read the file and get the data. Close the file.
-            with open(config.SCHEDULE, 'r') as schedule_file:
-                schedule = json.load(schedule_file)
-                schedule.append({
-                    'photo': self.chosen_image,
-                    'description': self.chosen_description
-                })
-            # Then read the file again to write to it
-            with open(config.SCHEDULE, 'w') as schedule_file:
-                json.dump(schedule, schedule_file)
-        else:
-            print('Creating new schedule file!')
-            with open(config.SCHEDULE, 'w') as schedule_file:
-                json.dump([data], schedule_file)
+        self.scheduler.write_schedule_for_post(self.chosen_image.split('/')[-1], self.chosen_description)
 
     def close(self):
         self.chosen_description = None
