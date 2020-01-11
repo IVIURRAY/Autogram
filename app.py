@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -234,7 +235,9 @@ class UploadPhotosPopup(QWidget):
                 json.dump([data], schedule_file)
 
     def add_photo_to_posts(self):
-        pass
+        destination = os.path.normpath(POSTS_DIR + '/' + self.chosen_image.split('/')[-1])
+        print(f'Moving file {self.chosen_image} to {destination}')
+        shutil.copy(self.chosen_image, destination)
 
     def close(self):
         self.chosen_description = None
