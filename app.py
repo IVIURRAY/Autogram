@@ -2,18 +2,28 @@ import json
 import os
 import shutil
 import uuid
+import tempfile
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-POSTS_DIR = os.path.normpath(os.getcwd() + '/posts')
-ARCHIVE_DIR = os.path.normpath(os.getcwd() + '/.archive')
-SCHEDULE = os.path.normpath(os.getcwd() + '/.schedule')
+TEMP_DIR = os.path.normpath(tempfile.gettempdir() + '/Autogram')
+POSTS_DIR = os.path.normpath(TEMP_DIR + '/posts')
+ARCHIVE_DIR = os.path.normpath(TEMP_DIR + '/.archive')
+SCHEDULE = os.path.normpath(TEMP_DIR + '/.schedule')
+
+
+def setup():
+    if not os.path.exists(TEMP_DIR):
+        os.mkdir(TEMP_DIR)
+    if not os.path.exists(POSTS_DIR):
+        os.mkdir(POSTS_DIR)
 
 
 class AutogramApp(QWidget):
 
     def __init__(self, parent=None):
+        setup()
         super(AutogramApp, self).__init__(parent)
 
         # Other windows
@@ -55,7 +65,7 @@ class AutogramApp(QWidget):
     def create_remove_btn(self):
         def on_click():
             print('Clicked remove...')
-            files, _ = self.open_file_dialog()
+            files, _ = self.open_remove_file_dialog()
 
             if files:
                 confirm = QMessageBox.question(self, 'Confirm?', f'Do you want to remove {len(files)} photos?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -91,8 +101,8 @@ class AutogramApp(QWidget):
 
         return self.btn_view_photos
 
-    def open_file_dialog(self):
-        return QFileDialog.getOpenFileNames(self, 'Autogram', 'posts', 'All Files (*)')
+    def open_remove_file_dialog(self):
+        return QFileDialog.getOpenFileNames(self, 'Autogram', POSTS_DIR, 'All Files (*)')
 
     def toggle_photo_buttons(self, enabled):
         self.btn_upload_photos.setEnabled(enabled)
@@ -255,7 +265,7 @@ class UploadPhotosPopup(QWidget):
         super().close()
 
     def open_file_dialog(self):
-        return QFileDialog.getOpenFileName(self, 'Autogram', 'posts', 'All Files (*)')
+        return QFileDialog.getOpenFileName(self, 'Autogram', POSTS_DIR, 'All Files (*)')
 
 
 if __name__ == '__main__':
