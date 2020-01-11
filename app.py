@@ -103,8 +103,9 @@ class AutogramApp(QWidget):
         box = QGroupBox("Scheduler")
 
         layout = QVBoxLayout()
-        layout.addWidget(QPushButton('Upload'))
-        layout.addWidget(QPushButton('View'))
+        # layout.addWidget(QPushButton('Upload'))
+        # layout.addWidget(QPushButton('View'))
+        layout.addWidget(QLabel('Coming soon.'))
         box.setLayout(layout)
 
         return box
