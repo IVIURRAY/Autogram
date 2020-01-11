@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import uuid
@@ -6,6 +5,7 @@ import uuid
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+import instagram
 import config
 import scheduler
 
@@ -17,8 +17,12 @@ def setup():
         os.mkdir(config.POSTS_DIR)
 
 
-def open_file_dialog(qwidget):
+def open_files_dialog(qwidget):
     return QFileDialog.getOpenFileNames(qwidget, 'Autogram', config.POSTS_DIR, 'All Files (*)')
+
+
+def open_file_dialog(qwidget):
+    return QFileDialog.getOpenFileName(qwidget, 'Autogram', config.POSTS_DIR, 'All Files (*)')
 
 
 class AutogramApp(QWidget):
@@ -70,7 +74,7 @@ class AutogramApp(QWidget):
     def create_remove_btn(self):
         def on_click():
             print('Clicked remove...')
-            files, _ = open_file_dialog(self)
+            files, _ = open_files_dialog(self)
 
             if files:
                 confirm = QMessageBox.question(self, 'Confirm?', f'Do you want to remove {len(files)} photos?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
@@ -118,7 +122,10 @@ class AutogramApp(QWidget):
         def on_click():
             file, _ = open_file_dialog(self)
             if file:
-                pass
+                schedule = self.scheduler.get_schedule_for_post(file.split('/')[-1])
+                if schedule:
+                    ig = instagram.Autogram('<USERNAME>', '<PASSWORD>')
+                    ig._auto_post(schedule['photo'], schedule['description'])
 
         self.btn_upload_to_instagram.clicked.connect(on_click)
         layout = QVBoxLayout()

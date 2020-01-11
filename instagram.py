@@ -1,16 +1,16 @@
 import time
-import autoit
-import config
 
+import autoit
 from selenium import webdriver
 from selenium.webdriver.chrome.options import *
 
 
 class Autogram:
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, dry_run=True):
         self.username = username
         self.password = password
+        self.dry_run = dry_run  # WARNING: Set to False if you want to upload for real!
         self.driver = webdriver.Chrome(executable_path='chromedriver/chromedriver.exe', options=self._get_options())
         self.default_hashtags = [
             '#python', '#programming', '#pythonprogramming', '#developer', '#softwareengineer', '#dev', '#python3' 
@@ -90,7 +90,7 @@ class Autogram:
                     print('Did not find `add to home screen` popup')
                     break
 
-    def upload_image(self, file_name, description=''):
+    def upload_image(self, file_path, description=''):
         # 1. Click upload image button
         print('Clicking `upload` button...')
         self.driver.find_element_by_xpath("//div[@role='menuitem']").click()
@@ -100,7 +100,7 @@ class Autogram:
         # Add the image path and click enter
         print('Uploading image to file explorer...')
         autoit.win_active("Open")
-        autoit.control_send("Open", "Edit1", os.path.normpath(config.POSTS_DIR + '/' + file_name))
+        autoit.control_send("Open", "Edit1", file_path)
         autoit.control_send("Open", "Edit1", "{ENTER}")
         time.sleep(2)
 
@@ -117,9 +117,23 @@ class Autogram:
 
         # 5. CLick Share
         print('Clicking `Share`!')
-        self.driver.find_element_by_xpath('//*[@id="react-root"]/section/div[1]/header/div/div[2]/button').click()
+        if self.dry_run:
+            print('DRY RUN IS ENABLED! - Therefore, not actually posting to IG.')
+        else:
+            self.driver.find_element_by_xpath('//*[@id="react-root"]/section/div[1]/header/div/div[2]/button').click()
         time.sleep(4)
         print('Upload completed.')
+
+    def _auto_post(self, image_path, description):
+        ig = Autogram(self.username, self.password)
+        ig.open_instagram()
+        ig.login()
+        ig.popup_close_save_login_info()
+        ig.popup_close_turn_on_notifications()
+        ig.popup_close_add_to_home_screen()
+        ig.upload_image(image_path, description=description)
+        ig.popup_close_turn_on_notifications()
+        ig.profile_page()
 
 
 if __name__ == '__main__':
@@ -131,6 +145,6 @@ if __name__ == '__main__':
     ig.popup_close_add_to_home_screen()
 
     description = 'Automatically upload this image using Code! \nSo I\'ve already got bored of positing to Instagram so I created a script to do it for me #automation #python \nGithub: https://github.com/IVIURRAY/Autogram'
-    ig.upload_image('posts\image-sample-upload.jpg', description=description)
+    ig.upload_image(os.path.normpath('C:/Users/HAM/AppData/Local/Temp/Autogram/posts/image-sample-upload.jpg'), description=description)
     ig.popup_close_turn_on_notifications()
     ig.profile_page()
