@@ -192,8 +192,18 @@ class UploadPhotosPopup(QWidget):
         box = QGroupBox("Upload")
 
         def on_ok():
+            file_name = self.chosen_image.split('/')[-1]
+            destination = os.path.normpath(f'{POSTS_DIR}/{file_name}')
+            print(f'Moving file {self.chosen_image} to {destination}')
+            try:
+                shutil.copy(self.chosen_image, destination)
+            except shutil.SameFileError as e:
+                print(e)
+                QMessageBox.critical(self, 'Duplicate File', f'Filename already exists: Please rename {file_name}',
+                                     QMessageBox.Close, QMessageBox.Close)
+                self.close()
+                return
             self.add_photo_to_schedule()
-            self.add_photo_to_posts()
             self.close()
 
         self.btn_ok.clicked.connect(on_ok)
@@ -233,11 +243,6 @@ class UploadPhotosPopup(QWidget):
             print('Creating new schedule file!')
             with open(SCHEDULE, 'w') as schedule_file:
                 json.dump([data], schedule_file)
-
-    def add_photo_to_posts(self):
-        destination = os.path.normpath(POSTS_DIR + '/' + self.chosen_image.split('/')[-1])
-        print(f'Moving file {self.chosen_image} to {destination}')
-        shutil.copy(self.chosen_image, destination)
 
     def close(self):
         self.chosen_description = None
