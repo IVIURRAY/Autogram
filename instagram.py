@@ -1,4 +1,5 @@
 import time
+import config
 
 import autoit
 from selenium import webdriver
@@ -11,7 +12,7 @@ class Autogram:
         self.username = username
         self.password = password
         self.dry_run = dry_run  # WARNING: Set to False if you want to upload for real!
-        self.driver = webdriver.Chrome(executable_path='chromedriver/chromedriver.exe', options=self._get_options())
+        self.driver = webdriver.Chrome(executable_path=os.path.normpath(config.CHROME_DIR + '/chromedriver.exe'), options=self._get_options())
         self.default_hashtags = [
             '#python', '#programming', '#pythonprogramming', '#developer', '#softwareengineer', '#dev', '#python3' 
             '#pythonsofinstagram', '#pip', '#coding', '#coder', '#coderlifestyle', '#coderslife', '#softwaredeveloper'

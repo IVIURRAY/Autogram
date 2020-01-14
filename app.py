@@ -1,6 +1,7 @@
 import os
 import shutil
 import uuid
+import urllib3
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -9,6 +10,7 @@ from PyQt5 import QtCore
 import instagram
 import config
 import scheduler
+import zipfile
 
 
 def setup():
@@ -16,6 +18,19 @@ def setup():
         os.mkdir(config.TEMP_DIR)
     if not os.path.exists(config.POSTS_DIR):
         os.mkdir(config.POSTS_DIR)
+    if not os.path.exists(config.CHROME_DIR):
+        os.mkdir(config.CHROME_DIR)
+        # Download chrome driver
+        pool = urllib3.PoolManager()
+        zip_file = config.CHROME_DIR + '/chromedriver.zip'
+        print('Downloading chromedriver zip...')
+        with open(zip_file, 'wb') as chromedriver_zip:
+            r = pool.request('GET', 'https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_win32.zip')
+            chromedriver_zip.write(r.data)
+            r.release_conn()
+        print('Extracting chromdriver zip....')
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            zip_ref.extractall(config.CHROME_DIR)
 
 
 def open_files_dialog(qwidget):
