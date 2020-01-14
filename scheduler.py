@@ -24,6 +24,7 @@ class Schedule:
             'description': self.get_description()
         }
 
+
 class Scheduler:
 
     def __init__(self):

@@ -17,6 +17,12 @@ class Autogram:
             '#pythonsofinstagram', '#pip', '#coding', '#coder', '#coderlifestyle', '#coderslife', '#softwaredeveloper'
         ]
 
+    def set_username(self, usr):
+        self.username = usr
+
+    def set_password(self, pwd):
+        self.password = pwd
+
     @staticmethod
     def _get_options():
         options = Options()
@@ -125,15 +131,14 @@ class Autogram:
         print('Upload completed.')
 
     def _auto_post(self, image_path, description):
-        ig = Autogram(self.username, self.password)
-        ig.open_instagram()
-        ig.login()
-        ig.popup_close_save_login_info()
-        ig.popup_close_turn_on_notifications()
-        ig.popup_close_add_to_home_screen()
-        ig.upload_image(image_path, description=description)
-        ig.popup_close_turn_on_notifications()
-        ig.profile_page()
+        self.open_instagram()
+        self.login()
+        self.popup_close_save_login_info()
+        self.popup_close_turn_on_notifications()
+        self.popup_close_add_to_home_screen()
+        self.upload_image(image_path, description=description)
+        self.popup_close_turn_on_notifications()
+        self.profile_page()
 
 
 if __name__ == '__main__':

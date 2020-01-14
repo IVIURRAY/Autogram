@@ -4,6 +4,7 @@ import uuid
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+from PyQt5 import QtCore
 
 import instagram
 import config
@@ -34,15 +35,20 @@ class AutogramApp(QWidget):
         # Other windows
         self.add_photos_popup = AddPhotosPopup()
         self.instagram_login_popup = InstagramLoginPopup()
+        self.instagram_login_popup.got_username.connect(self.receive_username)
+        self.instagram_login_popup.got_password.connect(self.receive_password)
 
         # Buttons
         self.btn_add_photos = QPushButton('Add')
         self.btn_remove_photos = QPushButton('Remove')
         self.btn_view_photos = QPushButton('View')
-        self.btn_upload_to_instagram = QPushButton('Upload now')
+        self.btn_upload_to_instagram = QPushButton("Upload Now")
+        self.btn_login_instagram = QPushButton('Login')
+        self.btn_upload_to_instagram.setEnabled(False)
 
         # Helpers
         self.scheduler = scheduler.Scheduler()
+        self.autogram = instagram.Autogram(config.DEFAULT_USERNAME, config.DEFAULT_PASSWORD)  # TODO - This needs to start headless.
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.posts_section(), 1, 0)
@@ -120,21 +126,31 @@ class AutogramApp(QWidget):
     def scheduler_section(self):
         box = QGroupBox("Scheduler")
 
-        def on_click():
-            file, _ = open_file_dialog(self)
-            if file:
-                schedule = self.scheduler.get_schedule_for_post(file.split('/')[-1])
-                if schedule:
-                    self.instagram_login_popup.show()
-                    # ig = instagram.Autogram('<USERNAME>', '<PASSWORD>')
-                    # ig._auto_post(schedule['photo'], schedule['description'])
-
-        self.btn_upload_to_instagram.clicked.connect(on_click)
+        self.btn_login_instagram.clicked.connect(self.on_click_instagram_login)
+        self.btn_upload_to_instagram.clicked.connect(self.on_click_instagram_upload)
         layout = QVBoxLayout()
+        layout.addWidget(self.btn_login_instagram)
         layout.addWidget(self.btn_upload_to_instagram)
         box.setLayout(layout)
 
         return box
+
+    def on_click_instagram_login(self):
+        self.instagram_login_popup.show()
+
+    def on_click_instagram_upload(self):
+        file, _ = open_file_dialog(self)
+        if file:
+            schedule = self.scheduler.get_schedule_for_post(file.split('/')[-1])
+            if schedule:
+                self.autogram._auto_post(schedule['photo'], schedule['description'])
+
+    def receive_username(self, usr):
+        self.autogram.set_username(usr)
+
+    def receive_password(self, pwd):
+        self.autogram.set_password(pwd)
+        self.btn_upload_to_instagram.setEnabled(True)
 
 
 class ViewPhotosPopup(QWidget):
@@ -166,6 +182,9 @@ class ViewPhotosPopup(QWidget):
 
 
 class InstagramLoginPopup(QWidget):
+
+    got_username = QtCore.pyqtSignal(str)
+    got_password = QtCore.pyqtSignal(str)
 
     def __init__(self, parnet=None):
         super(InstagramLoginPopup, self).__init__(parnet)
@@ -206,16 +225,18 @@ class InstagramLoginPopup(QWidget):
     def confirm(self):
         box = QGroupBox("Login")
         layout = QVBoxLayout()
-
-        def on_click():
-            print(self.input_username.text())
-            print(self.input_password.text())
-
-        self.btn_login.clicked.connect(on_click)
+        self.btn_login.clicked.connect(self.on_click_login)
         layout.addWidget(self.btn_login)
         box.setLayout(layout)
 
         return box
+
+    def on_click_login(self):
+        print('USERNAME: ', self.input_username.text())
+        print('PWD: ', self.input_password.displayText())
+        self.got_username.emit(self.input_username.text())
+        self.got_password.emit(self.input_password.text())
+        self.close()
 
 
 class AddPhotosPopup(QWidget):
